@@ -1,0 +1,77 @@
+{
+  "timestamp": "2026-11-26T00:15:09Z",
+  "canonical_classes": [
+    "Tomato___Early_Blight",
+    "Tomato___Late_Blight",
+    "Tomato___healthy",
+    "Potato___Late_Blight",
+    "Potato___healthy",
+    "Rice___Blast",
+    "Rice___healthy"
+  ],
+  "dataset_sources": {
+    "PlantVillage": {
+      "citation": "Hughes, D. P., & Salathe, M. (2015). arXiv:1511.08060; Mohanty, S. P., Hughes, D. P., & Salathe, M. (2016). Frontiers in Plant Science, 7, 1419.",
+      "repository": "https://github.com/spMohanty/PlantVillage-Dataset",
+      "license": "Uncertain / Mixed: Frontiers publication CC BY 4.0; Hugging Face card CC BY-SA 3.0; GitHub repo lacks root license. CC0 non-authoritative.",
+      "capture_conditions": "Laboratory-controlled single-leaf photography against neutral/grey background",
+      "known_limitations": "Lack of in-field canopy clutter, variable ambient daylight, and complex foliar backgrounds. Leaf grouping metadata (leaf_grouping/leaf-map.json) not ingested by pipeline."
+    },
+    "Rice_Diseases": {
+      "citation": "Pereira, J. (2020). Rice Disease Classification Using Transfer Learning. GitHub: jonathanrjpereira/Rice-Disease-Classification (Original by Huy Minh Do, Kaggle: minhhuy2810/rice-diseases-image-dataset).",
+      "repository": "https://github.com/jonathanrjpereira/Rice-Disease-Classification",
+      "license": "Wrapper repository: GPL-3.0; Underlying images: Unverified Kaggle community upload.",
+      "capture_conditions": "Isolated leaf blade on white paper background",
+      "known_limitations": "Laboratory white background without natural field foliage or soil context. Underlying commercial/open-source image license unverified."
+    }
+  },
+  "clean_stats": {
+    "total_inspected": 1050,
+    "valid_images": 1050,
+    "corrupt_images": 0,
+    "duplicates_removed": 0,
+    "class_counts": {
+      "Tomato___Early_Blight": 150,
+      "Tomato___Late_Blight": 150,
+      "Tomato___healthy": 150,
+      "Potato___Late_Blight": 150,
+      "Potato___healthy": 150,
+      "Rice___Blast": 150,
+      "Rice___healthy": 150
+    }
+  },
+  "split_stats": {
+    "train": {
+      "Tomato___Early_Blight": 105,
+      "Tomato___Late_Blight": 105,
+      "Tomato___healthy": 105,
+      "Potato___Late_Blight": 105,
+      "Potato___healthy": 105,
+      "Rice___Blast": 105,
+      "Rice___healthy": 105
+    },
+    "val": {
+      "Tomato___Early_Blight": 22,
+      "Tomato___Late_Blight": 22,
+      "Tomato___healthy": 22,
+      "Potato___Late_Blight": 22,
+      "Potato___healthy": 22,
+      "Rice___Blast": 22,
+      "Rice___healthy": 22
+    },
+    "test": {
+      "Tomato___Early_Blight": 23,
+      "Tomato___Late_Blight": 23,
+      "Tomato___healthy": 23,
+      "Potato___Late_Blight": 23,
+      "Potato___healthy": 23,
+      "Rice___Blast": 23,
+      "Rice___healthy": 23
+    }
+  },
+  "data_directories": {
+    "raw": "C:\\Users\\admin\\OneDrive\\Desktop\\Intelligent-Crop-Diagnosis\\data\\raw",
+    "clean": "C:\\Users\\admin\\OneDrive\\Desktop\\Intelligent-Crop-Diagnosis\\data\\clean",
+    "processed": "C:\\Users\\admin\\OneDrive\\Desktop\\Intelligent-Crop-Diagnosis\\data\\processed"
+  }
+}
