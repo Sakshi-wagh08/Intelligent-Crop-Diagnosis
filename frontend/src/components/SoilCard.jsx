@@ -62,14 +62,14 @@ export default function SoilCard({ soilData, loading = false, error = null }) {
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-slate-900 text-base sm:text-lg flex items-center gap-2">
               <Layers className="w-5 h-5 text-emerald-600" />
-              Geospatial Soil Telemetry
+              Field Soil Summary
             </h3>
             <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
               Depth: {depth}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Data Source: <strong className="text-slate-700">{source}</strong>
+            Source: <strong className="text-slate-700">{source}</strong>
           </p>
         </div>
 
@@ -87,22 +87,22 @@ export default function SoilCard({ soilData, loading = false, error = null }) {
         />
       </div>
 
-      {/* Grid of Telemetry Properties */}
+      {/* Grid of Soil Properties */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Soil pH */}
         <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>Soil Reaction</span>
+            <span>Soil pH (Acidity)</span>
             <FlaskConical className="w-3.5 h-3.5 text-emerald-600" />
           </div>
           <div className="mt-1 flex items-baseline gap-1.5">
             <span className="text-xl font-bold text-slate-900 font-mono">
               {ph_water !== null ? Number(ph_water).toFixed(2) : '—'}
             </span>
-            <span className="text-xs text-slate-500 font-medium">pH (H₂O)</span>
+            <span className="text-xs text-slate-500 font-medium">pH</span>
           </div>
           <span className="text-[11px] text-slate-500 block mt-0.5">
-            {ph_water < 6.0 ? 'Acidic' : ph_water > 7.5 ? 'Alkaline' : 'Near Neutral'}
+            {ph_water < 6.0 ? 'Slightly Acidic' : ph_water > 7.5 ? 'Alkaline' : 'Balanced / Neutral'}
           </span>
         </div>
 
@@ -119,14 +119,14 @@ export default function SoilCard({ soilData, loading = false, error = null }) {
             <span className="text-xs text-slate-500 font-medium">g / kg</span>
           </div>
           <span className="text-[11px] text-slate-500 block mt-0.5">
-            {soc < 5 ? 'Low Organic Reserve' : soc > 10 ? 'Rich Organic Matter' : 'Moderate Carbon'}
+            {soc < 5 ? 'Low Organic Matter' : soc > 10 ? 'Rich Organic Matter' : 'Moderate Organic Matter'}
           </span>
         </div>
 
-        {/* USDA Soil Texture */}
+        {/* Soil Type */}
         <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>USDA Texture</span>
+            <span>Soil Type</span>
             <Compass className="w-3.5 h-3.5 text-amber-600" />
           </div>
           <div className="mt-1">
@@ -139,10 +139,10 @@ export default function SoilCard({ soilData, loading = false, error = null }) {
           </div>
         </div>
 
-        {/* Available Water Capacity (AWC) */}
+        {/* Water Holding Capacity */}
         <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>Hydraulic Capacity</span>
+            <span>Water Holding</span>
             <Droplets className="w-3.5 h-3.5 text-blue-600" />
           </div>
           <div className="mt-1 flex items-baseline gap-1.5">
@@ -152,7 +152,7 @@ export default function SoilCard({ soilData, loading = false, error = null }) {
             <span className="text-xs text-slate-500 font-medium">cm³/cm³</span>
           </div>
           <span className="text-[11px] text-slate-500 block mt-0.5">
-            Volumetric Water Retention
+            Moisture storage capacity
           </span>
         </div>
       </div>

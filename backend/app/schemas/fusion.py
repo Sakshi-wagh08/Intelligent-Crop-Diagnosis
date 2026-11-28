@@ -79,6 +79,9 @@ class FusionRecommendationResponse(BaseModel):
     safety_assessment: SafetyAssessment
     treatment: Optional[TreatmentDetail] = None
     dosage_breakdown: Optional[DosageCalculationBreakdown] = None
+    fertilizer_recommendation: Optional[Dict[str, Any]] = None
+    weather_advisory: Optional[Dict[str, Any]] = None
+    farmer_summary: Optional[Dict[str, Any]] = None
     advisory_notice: str
 
 

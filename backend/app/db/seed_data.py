@@ -117,6 +117,16 @@ SEED_ACTIVE_INGREDIENTS = [
         "ppe_requirements": "Dust/mist respirator, rubber gloves, protective glasses.",
         "is_demo": True,
     },
+    {
+        "common_name": "Urea",
+        "chemical_family": "Nitrogenous Fertilizer (Carbamide)",
+        "standard_concentration_Cr": 46.0,  # Reference Cr = 46.0% N
+        "concentration_unit": "%",
+        "max_legal_dose_cap": 60.0,  # Max 60 kg/acre split dose cap
+        "phi_days": 0,
+        "ppe_requirements": "Wash hands after soil broadcasting; store in dry place.",
+        "is_demo": True,
+    },
 ]
 
 # Seed Base Treatments (Package-of-Practices Demonstration Records)
@@ -378,6 +388,41 @@ SEED_PRODUCTS = [
         "registered_crops": "Tomato",
         "registered_diseases": "Early Blight",
         "application_method": "Soil Application / Broadcast",  # NOT FOLIAR
+        "is_legally_registered": True,
+        "is_demo": True,
+    },
+    # Soil-Applied Fertilizer Offerings (Urea 46% N)
+    {
+        "merchant_name": "Kisan Seva Kendra [DEMO Agro-Dealer]",
+        "active_ingredient": "Urea",
+        "brand_name": "DemoNeem Coated Urea 46% N [DEMO]",
+        "concentration_Cs": 46.0,
+        "concentration_unit": "%",
+        "formulation_type": "GR",
+        "package_size": "45 kg",
+        "price": 266.0,
+        "stock_quantity": 40,
+        "registration_number": "FCO-DEMO-2026-101",
+        "registered_crops": "Tomato, Potato, Rice",
+        "registered_diseases": "Healthy, Early Blight, Late Blight, Blast, Soil Nutrition",
+        "application_method": "Soil Application",
+        "is_legally_registered": True,
+        "is_demo": True,
+    },
+    {
+        "merchant_name": "Green Valley Farm Supplies [DEMO Agro-Dealer]",
+        "active_ingredient": "Urea",
+        "brand_name": "DemoAgri Urea 46% N [DEMO]",
+        "concentration_Cs": 46.0,
+        "concentration_unit": "%",
+        "formulation_type": "GR",
+        "package_size": "25 kg",
+        "price": 175.0,
+        "stock_quantity": 20,
+        "registration_number": "FCO-DEMO-2026-102",
+        "registered_crops": "Tomato, Potato, Rice",
+        "registered_diseases": "Healthy, Early Blight, Late Blight, Blast, Soil Nutrition",
+        "application_method": "Soil Application",
         "is_legally_registered": True,
         "is_demo": True,
     },

@@ -258,3 +258,87 @@ class AgronomicKnowledgeBase:
                 seen.add(pair)
                 result.append({"crop": t["crop"], "disease": t["disease"], "status": "VERIFIED"})
         return result
+
+    @classmethod
+    def get_fertilizer_plan(
+        cls,
+        crop: str,
+        stage: Optional[str] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Returns verified soil-applied fertilizer (Urea 46% N) baseline for a crop and stage."""
+        crop_clean = crop.strip().lower()
+        stage_clean = stage.strip().lower() if stage else None
+
+        matches = [f for f in VERIFIED_FERTILIZER_PLANS if f["crop"].lower() == crop_clean]
+        if not matches:
+            return None
+
+        if stage_clean:
+            for m in matches:
+                if stage_clean in [s.lower() for s in m.get("crop_stages", [])]:
+                    return m
+        return matches[0]
+
+
+VERIFIED_FERTILIZER_PLANS: List[Dict[str, Any]] = [
+    {
+        "crop": "Tomato",
+        "nutrient_focus": "Nitrogen Top-Dressing / Basal Support",
+        "active_ingredient": "Urea",
+        "registered_product_name": "Neem Coated Urea (46% N)",
+        "chemical_family": "Nitrogenous Fertilizer (FCO Standard)",
+        "standard_concentration_Cr": 46.0,
+        "concentration_unit": "%",
+        "base_dose_D0": 35.0,
+        "dose_unit": "kg/acre",
+        "max_legal_dose_cap": 50.0,
+        "crop_stages": ["Seedling", "Vegetative", "Flowering", "Fruiting"],
+        "water_dilution_liters_per_acre": 0.0,
+        "application_method": "Soil Application (Split Side-Dressing around Root Zone)",
+        "phi_days": 0,
+        "ppe_requirements": "Gloves optional; wash hands thoroughly after spreading.",
+        "label_restrictions": "Apply in moist soil away from plant stem; split into 2–3 doses in sandy soil to reduce leaching.",
+        "source_citation": "UAS Bengaluru Package of Practices for Horticultural Crops (2020) — Tomato Nutrient Schedule",
+        "verification_status": "VERIFIED",
+    },
+    {
+        "crop": "Potato",
+        "nutrient_focus": "Nitrogen Earthing-Up Support",
+        "active_ingredient": "Urea",
+        "registered_product_name": "Neem Coated Urea (46% N)",
+        "chemical_family": "Nitrogenous Fertilizer (FCO Standard)",
+        "standard_concentration_Cr": 46.0,
+        "concentration_unit": "%",
+        "base_dose_D0": 40.0,
+        "dose_unit": "kg/acre",
+        "max_legal_dose_cap": 55.0,
+        "crop_stages": ["Vegetative", "Tuber Initiation", "Tuber Bulking"],
+        "water_dilution_liters_per_acre": 0.0,
+        "application_method": "Soil Application (Band Placement before Earthing-Up)",
+        "phi_days": 0,
+        "ppe_requirements": "Gloves optional; wash hands thoroughly after spreading.",
+        "label_restrictions": "Apply 50% at planting and 50% at earthing-up (30 days); irrigate lightly afterward.",
+        "source_citation": "ICAR-CPRI Shimla Technical Bulletin — Potato Nutrient Management",
+        "verification_status": "VERIFIED",
+    },
+    {
+        "crop": "Rice",
+        "nutrient_focus": "Split Nitrogen Tillering / Panicle Support",
+        "active_ingredient": "Urea",
+        "registered_product_name": "Neem Coated Urea (46% N)",
+        "chemical_family": "Nitrogenous Fertilizer (FCO Standard)",
+        "standard_concentration_Cr": 46.0,
+        "concentration_unit": "%",
+        "base_dose_D0": 35.0,
+        "dose_unit": "kg/acre",
+        "max_legal_dose_cap": 50.0,
+        "crop_stages": ["Seedling", "Tillering", "Panicle Initiation", "Maturity"],
+        "water_dilution_liters_per_acre": 0.0,
+        "application_method": "Soil Application (Broadcast into Shallow Standing Water)",
+        "phi_days": 0,
+        "ppe_requirements": "Wash hands after broadcasting.",
+        "label_restrictions": "Drain excess standing water before broadcasting; apply in 3 splits (basal, active tillering, panicle initiation).",
+        "source_citation": "ICAR-NRRI Cuttack Package of Practices — Rice Nitrogen Scheduling",
+        "verification_status": "VERIFIED",
+    },
+]

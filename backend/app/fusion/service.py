@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timezone
@@ -13,6 +14,7 @@ from backend.app.schemas.fusion import (
 )
 from backend.app.vision.service import vision_service, VisionService
 from backend.app.telemetry.service import soil_telemetry_service, SoilTelemetryService
+from backend.app.telemetry.weather import get_spray_weather_advisory
 from backend.app.fusion.knowledge_base import AgronomicKnowledgeBase
 from backend.app.fusion.safety import SafetyComplianceEngine
 from backend.app.fusion.engine import DosageCalculator
@@ -129,13 +131,41 @@ class FusionService:
             )
 
         # ----------------------------------------------------------------------
-        # Step 2: Query Geospatial Soil Telemetry
+        # Step 2: Query Geospatial Soil Telemetry & Live Weather Concurrently
         # ----------------------------------------------------------------------
-        soil_resp: SoilTelemetryResponse = await self.soil_service.get_telemetry(
-            latitude=latitude,
-            longitude=longitude,
-            depth="0-5cm",
+        soil_resp, weather_adv = await asyncio.gather(
+            self.soil_service.get_telemetry(
+                latitude=latitude,
+                longitude=longitude,
+                depth="0-5cm",
+            ),
+            get_spray_weather_advisory(latitude=latitude, longitude=longitude),
         )
+
+        # Compute soil-adjusted fertilizer plan for the crop & stage
+        fertilizer_plan = AgronomicKnowledgeBase.get_fertilizer_plan(crop=crop_name, stage=crop_stage)
+        fertilizer_rec: Optional[Dict[str, Any]] = None
+        if fertilizer_plan:
+            fert_calc = DosageCalculator.compute_dosage(
+                treatment=fertilizer_plan,
+                severity_result=None,
+                soil_result=soil_resp,
+            )
+            fertilizer_rec = {
+                "product_name": fertilizer_plan["registered_product_name"],
+                "active_ingredient": fertilizer_plan["active_ingredient"],
+                "reference_concentration_Cr": fertilizer_plan["standard_concentration_Cr"],
+                "nutrient_focus": fertilizer_plan["nutrient_focus"],
+                "base_dose_D0": fert_calc.base_dose_D0,
+                "soil_factor_Fs": fert_calc.soil_factor_Fs,
+                "soil_factor_status": fert_calc.soil_factor_status,
+                "final_prescribed_dose": fert_calc.final_prescribed_dose,
+                "max_label_dose_cap": fert_calc.max_label_dose_cap,
+                "dose_unit": fert_calc.dose_unit,
+                "application_method": fertilizer_plan["application_method"],
+                "instructions": fertilizer_plan["label_restrictions"],
+                "source_citation": fertilizer_plan["source_citation"],
+            }
 
         soil_pH = None
         soil_texture = None
@@ -171,6 +201,23 @@ class FusionService:
                 diagnostic_confidence=diagnosis.confidence,
                 treatment=None,
             )
+            fert_tip = (
+                f"For healthy growth, apply {fertilizer_rec['final_prescribed_dose']} {fertilizer_rec['dose_unit']} "
+                f"of {fertilizer_rec['product_name']} per acre ({fertilizer_rec['instructions']})."
+                if fertilizer_rec
+                else "Keep watering normally and check leaves weekly."
+            )
+            farmer_summary = {
+                "headline": f"Good news! Your {crop_name} leaf looks healthy.",
+                "what_to_do": "No chemical pesticide spray is needed.",
+                "how_to_mix": "Do not spray any fungicide or pesticide.",
+                "safety_tip": "Inspect your field once a week for early spots.",
+                "weather_tip": weather_adv.get("advisory", ""),
+                "fertilizer_tip": fert_tip,
+                "speech_text": (
+                    f"Good news. Your {crop_name} crop looks healthy, so no pesticide spray is needed. {fert_tip}"
+                ),
+            }
             return FusionRecommendationResponse(
                 recommendation_available=True,
                 status="HEALTHY_NO_TREATMENT_NEEDED",
@@ -179,6 +226,9 @@ class FusionService:
                 safety_assessment=safety,
                 treatment=None,
                 dosage_breakdown=None,
+                fertilizer_recommendation=fertilizer_rec,
+                weather_advisory=weather_adv,
+                farmer_summary=farmer_summary,
                 advisory_notice=DISCLAIMER_ADVISORY,
             )
 
@@ -214,6 +264,8 @@ class FusionService:
                 safety_assessment=safety,
                 treatment=None,
                 dosage_breakdown=None,
+                fertilizer_recommendation=fertilizer_rec,
+                weather_advisory=weather_adv,
                 advisory_notice=DISCLAIMER_ADVISORY,
             )
 
@@ -244,12 +296,32 @@ class FusionService:
             soil_result=soil_resp,
         )
 
+        fert_tip = (
+            f"Soil nutrition note: apply {fertilizer_rec['final_prescribed_dose']} {fertilizer_rec['dose_unit']} "
+            f"of {fertilizer_rec['product_name']} per acre separately from spraying."
+            if fertilizer_rec
+            else ""
+        )
+
         # If safety checks failed, suppress actionable prescription
         if not safety.is_safe_to_apply:
             logger.warning(
                 "Safety checks failed for (%s, %s): %s. Prescribed dosage suppressed.",
                 crop_name, diagnosis.disease, safety.safety_status
             )
+            reason = safety.warnings[0] if safety.warnings else safety.safety_status
+            farmer_summary = {
+                "headline": f"Hold on — do not spray yet ({safety.safety_status.replace('_', ' ').title()}).",
+                "what_to_do": reason,
+                "how_to_mix": "Chemical spray withheld for crop or harvest safety.",
+                "safety_tip": "Show this leaf to your local agricultural officer before spraying.",
+                "weather_tip": weather_adv.get("advisory", ""),
+                "fertilizer_tip": fert_tip,
+                "speech_text": (
+                    f"Warning for your {crop_name} crop. Do not spray right now. {reason} "
+                    "Please check with your local agricultural officer."
+                ),
+            }
             return FusionRecommendationResponse(
                 recommendation_available=False,
                 status=safety.safety_status,
@@ -258,8 +330,33 @@ class FusionService:
                 safety_assessment=safety,
                 treatment=treatment_detail,
                 dosage_breakdown=dosage_calc,  # Breakdown included for mathematical transparency
+                fertilizer_recommendation=fertilizer_rec,
+                weather_advisory=weather_adv,
+                farmer_summary=farmer_summary,
                 advisory_notice=DISCLAIMER_ADVISORY,
             )
+
+        prod_name = treatment_detail.registered_product_name or treatment_detail.active_ingredient
+        farmer_summary = {
+            "headline": f"Detected {crop_name} {diagnosis.disease}.",
+            "what_to_do": f"Use {prod_name} ({dosage_calc.final_prescribed_dose} {dosage_calc.dose_unit}).",
+            "how_to_mix": (
+                f"Mix {dosage_calc.final_prescribed_dose} {dosage_calc.dose_unit.split('/')[0]} of {prod_name} "
+                f"in {dosage_calc.water_dilution_liters_per_acre:.0f} liters of clean water for 1 acre."
+            ),
+            "safety_tip": (
+                f"Wear {treatment_detail.ppe_requirements}. Wait at least {treatment_detail.phi_days} days after spraying before harvest."
+            ),
+            "weather_tip": weather_adv.get("advisory", ""),
+            "fertilizer_tip": fert_tip,
+            "speech_text": (
+                f"Your {crop_name} crop shows {diagnosis.disease}. "
+                f"Mix {dosage_calc.final_prescribed_dose} {dosage_calc.dose_unit.split('/')[0]} of {prod_name} "
+                f"in {dosage_calc.water_dilution_liters_per_acre:.0f} liters of water per acre. "
+                f"Wait at least {treatment_detail.phi_days} days before harvesting. "
+                f"{weather_adv.get('advisory', '')}"
+            ),
+        }
 
         return FusionRecommendationResponse(
             recommendation_available=True,
@@ -269,6 +366,9 @@ class FusionService:
             safety_assessment=safety,
             treatment=treatment_detail,
             dosage_breakdown=dosage_calc,
+            fertilizer_recommendation=fertilizer_rec,
+            weather_advisory=weather_adv,
+            farmer_summary=farmer_summary,
             advisory_notice=DISCLAIMER_ADVISORY,
         )
 

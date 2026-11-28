@@ -3,7 +3,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
 from backend.app.core.logging import logger
-from backend.app.db.session import check_database_connection, check_postgis_extension
+from backend.app.db.session import (
+    check_database_connection,
+    check_postgis_extension,
+    ensure_local_database_seeded,
+)
 from backend.app.api.v1.router import api_router
 
 
@@ -13,6 +17,8 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing Intelligent Crop Diagnosis Application...")
     logger.info(f"Target Environment: {settings.ENVIRONMENT}")
     logger.info(f"Database Target: {settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}")
+
+    ensure_local_database_seeded()
 
     # Startup Diagnostic Checks
     db_ok, db_err = check_database_connection()

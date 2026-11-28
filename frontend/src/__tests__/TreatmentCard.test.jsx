@@ -113,4 +113,39 @@ describe('TreatmentCard Component Safety & Display', () => {
 
     expect(screen.getByText(/No Chemical Pesticide Treatment Required/i)).toBeDefined();
   });
+
+  it('displays Simple Farmer Action Plan, weather advisory, and fertilizer plan when provided', () => {
+    const richRec = {
+      ...mockRecommendation,
+      weather_advisory: {
+        weather_status: 'live',
+        is_good_to_spray: true,
+        advisory: 'Good weather to spray now: calm wind.',
+      },
+      fertilizer_recommendation: {
+        product_name: 'Neem Coated Urea (46% N)',
+        soil_factor_Fs: 1.15,
+        soil_factor_status: 'Active (low carbon)',
+        final_prescribed_dose: 40.25,
+        dose_unit: 'kg/acre',
+        application_method: 'Soil Application',
+        instructions: 'Apply in moist soil.',
+      },
+      farmer_summary: {
+        headline: 'Detected Tomato Early Blight.',
+        what_to_do: 'Use Indofil M-45 (0.8 kg/acre).',
+        how_to_mix: 'Mix 0.8 kg in 200 liters of water.',
+        safety_tip: 'Wear gloves. Wait 7 days before harvest.',
+        speech_text: 'Detected Tomato Early Blight.',
+      },
+    };
+
+    render(<TreatmentCard recommendation={richRec} fieldAreaAcres={2.0} />);
+
+    expect(screen.getByText(/Simple Farmer Action Plan/i)).toBeDefined();
+    expect(screen.getByText(/Listen \(Read Aloud\)/i)).toBeDefined();
+    expect(screen.getByText(/Good weather to spray now/i)).toBeDefined();
+    expect(screen.getByText(/Soil-Adjusted Fertilizer Plan/i)).toBeDefined();
+    expect(screen.getByText(/80.5 kg/i)).toBeDefined();
+  });
 });

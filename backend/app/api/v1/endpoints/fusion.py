@@ -80,3 +80,41 @@ async def get_fusion_recommendation(
 def list_supported_pathologies() -> List[dict]:
     """Returns all crop-disease combinations currently cataloged in the knowledge base."""
     return AgronomicKnowledgeBase.get_supported_pathologies()
+
+
+@router.get("/fertilizer", summary="Soil-Adjusted Crop Fertilizer Recommendation")
+async def get_soil_fertilizer_recommendation(
+    crop_name: str = Query(..., description="Crop name (Tomato, Potato, Rice)"),
+    crop_stage: str = Query("Vegetative", description="Growth stage"),
+    latitude: float = Query(..., ge=-90.0, le=90.0),
+    longitude: float = Query(..., ge=-180.0, le=180.0),
+    field_area_acres: float = Query(1.0, gt=0.0, le=1000.0),
+) -> dict:
+    """Computes soil-adjusted fertilizer dosage D = min(D0 * Fs, D_max) from SoilGrids/fallback."""
+    from backend.app.telemetry.service import soil_telemetry_service
+    from backend.app.fusion.engine import DosageCalculator
+
+    plan = AgronomicKnowledgeBase.get_fertilizer_plan(crop=crop_name, stage=crop_stage)
+    if not plan:
+        raise HTTPException(status_code=404, detail=f"No fertilizer plan found for crop '{crop_name}'")
+
+    soil_resp = await soil_telemetry_service.get_telemetry(latitude=latitude, longitude=longitude, depth="0-5cm")
+    calc = DosageCalculator.compute_dosage(treatment=plan, soil_result=soil_resp)
+    total_qty = round(calc.final_prescribed_dose * field_area_acres, 2)
+    return {
+        "crop": crop_name,
+        "crop_stage": crop_stage,
+        "field_area_acres": field_area_acres,
+        "product_name": plan["registered_product_name"],
+        "active_ingredient": plan["active_ingredient"],
+        "base_dose_D0": calc.base_dose_D0,
+        "soil_factor_Fs": calc.soil_factor_Fs,
+        "soil_factor_status": calc.soil_factor_status,
+        "final_prescribed_dose": calc.final_prescribed_dose,
+        "total_field_quantity": total_qty,
+        "dose_unit": calc.dose_unit,
+        "application_method": plan["application_method"],
+        "instructions": plan["label_restrictions"],
+        "source_citation": plan["source_citation"],
+        "soil_data_status": soil_resp.data_status,
+    }

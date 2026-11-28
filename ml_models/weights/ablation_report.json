@@ -1,0 +1,87 @@
+{
+  "total_scenarios": 8,
+  "safety_blocks_triggered": 3,
+  "mean_soil_fertilizer_adjustment_kg_acre": 1.069,
+  "scenarios": [
+    {
+      "scenario": "Tomato / Early Blight (conf=0.95, dth=20, soil=low_oc)",
+      "image_only_status": "SUCCESS",
+      "image_only_pesticide_dose": 0.8,
+      "soil_only_fertilizer_D0": 35.0,
+      "soil_only_Fs": 1.03,
+      "soil_only_fertilizer_D": 36.05,
+      "combined_status": "SUCCESS",
+      "combined_safe_to_apply": true
+    },
+    {
+      "scenario": "Tomato / Early Blight (conf=0.91, dth=5, soil=normal)",
+      "image_only_status": "SUCCESS",
+      "image_only_pesticide_dose": 0.2,
+      "soil_only_fertilizer_D0": 35.0,
+      "soil_only_Fs": 1.0,
+      "soil_only_fertilizer_D": 35.0,
+      "combined_status": "SUCCESS",
+      "combined_safe_to_apply": true
+    },
+    {
+      "scenario": "Tomato / Late Blight (conf=0.93, dth=10, soil=rich)",
+      "image_only_status": "SUCCESS",
+      "image_only_pesticide_dose": 0.8,
+      "soil_only_fertilizer_D0": 35.0,
+      "soil_only_Fs": 0.85,
+      "soil_only_fertilizer_D": 29.75,
+      "combined_status": "SUCCESS",
+      "combined_safe_to_apply": true
+    },
+    {
+      "scenario": "Potato / Late Blight (conf=0.94, dth=18, soil=low_oc)",
+      "image_only_status": "SUCCESS",
+      "image_only_pesticide_dose": 1.0,
+      "soil_only_fertilizer_D0": 40.0,
+      "soil_only_Fs": 1.03,
+      "soil_only_fertilizer_D": 41.2,
+      "combined_status": "SUCCESS",
+      "combined_safe_to_apply": true
+    },
+    {
+      "scenario": "Rice / Blast (conf=0.89, dth=35, soil=normal)",
+      "image_only_status": "SUCCESS",
+      "image_only_pesticide_dose": 0.16,
+      "soil_only_fertilizer_D0": 35.0,
+      "soil_only_Fs": 1.0,
+      "soil_only_fertilizer_D": 35.0,
+      "combined_status": "SUCCESS",
+      "combined_safe_to_apply": true
+    },
+    {
+      "scenario": "Tomato / healthy (conf=0.97, dth=25, soil=low_oc)",
+      "image_only_status": "HEALTHY_NO_TREATMENT_NEEDED",
+      "image_only_pesticide_dose": 0.0,
+      "soil_only_fertilizer_D0": 35.0,
+      "soil_only_Fs": 1.03,
+      "soil_only_fertilizer_D": 36.05,
+      "combined_status": "HEALTHY_NO_TREATMENT_NEEDED",
+      "combined_safe_to_apply": false
+    },
+    {
+      "scenario": "Rice / Blast (conf=0.6, dth=40, soil=normal)",
+      "image_only_status": "REJECTED_LOW_CONFIDENCE",
+      "image_only_pesticide_dose": 0.16,
+      "soil_only_fertilizer_D0": 35.0,
+      "soil_only_Fs": 1.0,
+      "soil_only_fertilizer_D": 35.0,
+      "combined_status": "REJECTED_LOW_CONFIDENCE",
+      "combined_safe_to_apply": false
+    },
+    {
+      "scenario": "Rice / Blast (conf=0.92, dth=10, soil=normal)",
+      "image_only_status": "REJECTED_PHI_VIOLATION",
+      "image_only_pesticide_dose": 0.16,
+      "soil_only_fertilizer_D0": 35.0,
+      "soil_only_Fs": 1.0,
+      "soil_only_fertilizer_D": 35.0,
+      "combined_status": "REJECTED_PHI_VIOLATION",
+      "combined_safe_to_apply": false
+    }
+  ]
+}

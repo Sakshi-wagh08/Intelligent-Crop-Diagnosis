@@ -63,11 +63,11 @@ export default function SubstitutionCard({
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-slate-900 text-base sm:text-lg flex items-center gap-2">
               <Store className="w-5 h-5 text-emerald-600" />
-              Localized Dealer Substitution & Ranking
+              Nearby Shops &amp; Product Options
             </h3>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Active Ingredient: <strong className="text-slate-800">{reference_active_ingredient}</strong> (Reference: {reference_dose_Qr} {reference_dose_unit} @ {reference_concentration_Cr}%)
+            Recommended Medicine: <strong className="text-slate-800">{reference_active_ingredient}</strong> ({reference_dose_Qr} {reference_dose_unit} at {reference_concentration_Cr}% strength)
           </p>
         </div>
 
@@ -80,32 +80,32 @@ export default function SubstitutionCard({
       <div className="p-3.5 rounded-xl bg-purple-50/80 border border-purple-200 text-xs text-purple-900 space-y-1">
         <div className="flex items-center gap-1.5 font-bold text-purple-950">
           <Sparkles className="w-3.5 h-3.5 text-purple-700" />
-          Academic Prototype Seed Notice:
+          Sample Shop Listings Notice:
         </div>
         <p className="leading-relaxed">
           {demonstration_advisory ||
-            'All agro-dealers, products, and prices presented are simulated demonstration data for research validation. Do not use for commercial retail transactions.'}
+            'Shops, stock counts, and prices shown here are sample listings. Always confirm live stock and price directly with the dealer.'}
         </p>
       </div>
 
       {/* Summary Metrics Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <span className="text-slate-500">Dealers Searched</span>
+          <span className="text-slate-500">Shops Checked</span>
           <p className="text-lg font-bold text-slate-900 font-mono mt-0.5">{total_merchants_searched}</p>
         </div>
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <span className="text-slate-500">Eligible Offerings</span>
+          <span className="text-slate-500">Matching Products</span>
           <p className="text-lg font-bold text-emerald-700 font-mono mt-0.5">{total_eligible_products}</p>
         </div>
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <span className="text-slate-500">Formula Used</span>
-          <p className="text-xs font-mono font-bold text-slate-800 mt-1 truncate" title="Qs = Qr * (Cr / Cs)">
-            Qs = Qr × (Cr / Cs)
+          <span className="text-slate-500">Adjusted for Brand</span>
+          <p className="text-xs font-semibold text-slate-800 mt-1 truncate" title="Qs = Qr * (Cr / Cs)">
+            Same Active Dose
           </p>
         </div>
         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <span className="text-slate-500">Target Field Area</span>
+          <span className="text-slate-500">Your Field Size</span>
           <p className="text-lg font-bold text-slate-900 font-mono mt-0.5">{field_area_acres} Acre(s)</p>
         </div>
       </div>
@@ -113,15 +113,15 @@ export default function SubstitutionCard({
       {/* Ranked Offerings List */}
       <div className="space-y-4">
         <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-          Ranked Dealer Offerings (Multi-Factor Score: Price 40%, Proximity 35%, Stock 25%)
+          Best Local Options (Ranked by Price, Distance &amp; Stock)
         </h4>
 
         {ranked_offerings.length === 0 ? (
           <div className="p-8 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
             <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
-            <p className="text-sm font-semibold text-slate-800">No Eligible Product Offerings Found</p>
+            <p className="text-sm font-semibold text-slate-800">No Matching Products Found Nearby</p>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              No dealers within the search radius stock legally registered, in-stock products matching the prescribed active ingredient. Check the ineligible candidates list below for details.
+              No shops within your search distance currently have this product in stock. Try increasing the search distance or check the excluded items below.
             </p>
           </div>
         ) : (
@@ -166,7 +166,7 @@ export default function SubstitutionCard({
                     </div>
 
                     <div className="text-right">
-                      <span className="text-xs text-slate-400 block">Ranking Utility Score</span>
+                      <span className="text-xs text-slate-400 block">Match Score</span>
                       <span className="text-lg font-bold text-emerald-800 font-mono">
                         {(item.composite_score * 100).toFixed(1)} / 100
                       </span>
@@ -176,15 +176,15 @@ export default function SubstitutionCard({
                   {/* Substitution & Quantity Metrics */}
                   <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                      <span className="text-slate-500">Substitute Dose (Qs)</span>
+                      <span className="text-slate-500">Dose for This Brand</span>
                       <p className="text-base font-bold text-slate-900 font-mono mt-0.5">
                         {item.substitute_dose_Qs} {item.dose_unit}
                       </p>
-                      <span className="text-[10px] text-slate-400">Equivalent active mass</span>
+                      <span className="text-[10px] text-slate-400">Adjusted for brand strength</span>
                     </div>
 
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                      <span className="text-slate-500">Packages Needed</span>
+                      <span className="text-slate-500">Packs to Buy</span>
                       <p className="text-base font-bold text-emerald-800 font-mono mt-0.5">
                         {item.packages_needed} Pack(s)
                       </p>
@@ -192,20 +192,20 @@ export default function SubstitutionCard({
                     </div>
 
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                      <span className="text-slate-500">Estimated Total Cost</span>
+                      <span className="text-slate-500">Total Cost</span>
                       <p className="text-base font-bold text-slate-900 font-mono mt-0.5 flex items-baseline">
                         <span className="text-xs font-sans mr-0.5">₹</span>
                         {item.estimated_total_cost}
                       </p>
-                      <span className="text-[10px] text-slate-400">₹{item.unit_price} / unit</span>
+                      <span className="text-[10px] text-slate-400">₹{item.unit_price} / pack</span>
                     </div>
 
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                      <span className="text-slate-500">Dealer Stock</span>
+                      <span className="text-slate-500">In Stock</span>
                       <p className="text-base font-bold text-blue-700 font-mono mt-0.5">
                         {item.stock_quantity} in stock
                       </p>
-                      <span className="text-[10px] text-slate-400">Available inventory</span>
+                      <span className="text-[10px] text-slate-400">Packs available at shop</span>
                     </div>
                   </div>
 
@@ -236,9 +236,9 @@ export default function SubstitutionCard({
                     </div>
                   </div>
 
-                  {/* Explainability Breakdown */}
+                  {/* Why Ranked Here */}
                   <div className="mt-2.5 p-2.5 rounded-lg bg-slate-50 text-[11px] text-slate-600 border border-slate-100">
-                    <span className="font-semibold text-slate-700">Rank Explainability: </span>
+                    <span className="font-semibold text-slate-700">Why Ranked Here: </span>
                     <span>{item.ranking_explanation}</span>
                   </div>
                 </div>

@@ -29,17 +29,17 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { to: '/', label: 'Overview', icon: Sprout },
-    { to: '/diagnose', label: 'Diagnosis Wizard', icon: Activity },
-    { to: '/merchants', label: 'Dealer Substitution', icon: Store },
-    { to: '/about', label: 'Citations & Architecture', icon: BookOpen },
+    { to: '/', label: 'Home', icon: Sprout },
+    { to: '/diagnose', label: 'Check Crop', icon: Activity },
+    { to: '/merchants', label: 'Nearby Shops', icon: Store },
+    { to: '/about', label: 'About & Sources', icon: BookOpen },
   ];
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo & Academic Project Title */}
+          {/* Logo & Simple App Title */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-200 group-hover:scale-105 transition-transform">
               <Sprout className="w-6 h-6" />
@@ -49,12 +49,9 @@ export default function Navbar() {
                 <span className="font-bold text-slate-900 tracking-tight text-base sm:text-lg leading-tight">
                   AgriMultimodal
                 </span>
-                <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                  DT v0.6
-                </span>
               </div>
               <p className="text-xs text-slate-500 hidden sm:block">
-                Precision Crop Diagnosis & Bounded Dosage Engine
+                Intelligent Crop Diagnosis &amp; Dosage Recommendation
               </p>
             </div>
           </Link>
@@ -86,7 +83,7 @@ export default function Navbar() {
             <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs">
               <span
                 className={`w-2 h-2 rounded-full ${
-                  health.status === 'healthy'
+                  health.status.startsWith('healthy') || health.status.includes('database connected')
                     ? 'bg-emerald-500 animate-pulse'
                     : health.status === 'checking'
                     ? 'bg-amber-400 animate-spin'
@@ -94,13 +91,12 @@ export default function Navbar() {
                 }`}
               />
               <span className="font-medium text-slate-700">
-                {health.status === 'healthy' ? 'API Online' : health.status === 'checking' ? 'Connecting...' : 'API Offline'}
+                {health.status.startsWith('healthy') || health.status.includes('database connected')
+                  ? 'Ready'
+                  : health.status === 'checking'
+                  ? 'Connecting...'
+                  : 'Offline'}
               </span>
-              {health.postgis && (
-                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                  PostGIS
-                </span>
-              )}
             </div>
           </div>
 

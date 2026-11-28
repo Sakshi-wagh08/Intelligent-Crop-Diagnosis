@@ -10,15 +10,129 @@ export default function GoogleMapView({
   searchRadiusKm = 25,
 }) {
   const mapContainerRef = useRef(null);
+  const leafletContainerRef = useRef(null);
+  const leafletMapInstanceRef = useRef(null);
   const [mapError, setMapError] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [leafletFailed, setLeafletFailed] = useState(false);
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
+  // Interactive OpenStreetMap (Leaflet) fallback when Google Maps API key is not configured
   useEffect(() => {
-    // If no API key provided, fall back immediately to list view
+    if (apiKey) return;
+
+    const initLeafletMap = () => {
+      if (!leafletContainerRef.current || !window.L) return;
+      try {
+        if (leafletMapInstanceRef.current) {
+          leafletMapInstanceRef.current.remove();
+          leafletMapInstanceRef.current = null;
+        }
+        const L = window.L;
+        const map = L.map(leafletContainerRef.current).setView([center.lat, center.lng], 11);
+        leafletMapInstanceRef.current = map;
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
+          maxZoom: 18,
+        }).addTo(map);
+
+        // Farmer location marker
+        L.circleMarker([center.lat, center.lng], {
+          radius: 8,
+          fillColor: '#2563eb',
+          color: '#ffffff',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 1,
+        })
+          .bindPopup('<strong>Your Field Location</strong>')
+          .addTo(map);
+
+        // Search radius circle
+        L.circle([center.lat, center.lng], {
+          color: '#059669',
+          fillColor: '#10b981',
+          fillOpacity: 0.1,
+          weight: 1.5,
+          radius: searchRadiusKm * 1000,
+        }).addTo(map);
+
+        const bounds = L.latLngBounds([[center.lat, center.lng]]);
+        merchants.forEach((m) => {
+          if (m.latitude && m.longitude) {
+            const id = m.id || m.merchant_id;
+            const name = m.name || m.merchant_name;
+            const marker = L.circleMarker([m.latitude, m.longitude], {
+              radius: selectedMerchantId === id ? 9 : 7,
+              fillColor: selectedMerchantId === id ? '#047857' : '#dc2626',
+              color: '#ffffff',
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 0.95,
+            }).addTo(map);
+            marker.bindPopup(`<strong>${name}</strong><br/>${m.distance_km ?? ''} km away`);
+            marker.on('click', () => onSelectMerchant(id));
+            bounds.extend([m.latitude, m.longitude]);
+          }
+        });
+
+        if (merchants.length > 0) {
+          map.fitBounds(bounds, { padding: [30, 30] });
+        }
+        setLeafletLoaded(true);
+        setLeafletFailed(false);
+      } catch (err) {
+        console.warn('Leaflet map fallback failed:', err);
+        setLeafletFailed(true);
+      }
+    };
+
+    if (window.L) {
+      initLeafletMap();
+      return () => {
+        if (leafletMapInstanceRef.current) {
+          leafletMapInstanceRef.current.remove();
+          leafletMapInstanceRef.current = null;
+        }
+      };
+    }
+
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link');
+      link.id = 'leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
+
+    let script = document.getElementById('leaflet-js');
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'leaflet-js';
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.async = true;
+      script.onload = () => initLeafletMap();
+      script.onerror = () => setLeafletFailed(true);
+      document.head.appendChild(script);
+    } else {
+      script.addEventListener('load', initLeafletMap);
+    }
+
+    return () => {
+      if (leafletMapInstanceRef.current) {
+        leafletMapInstanceRef.current.remove();
+        leafletMapInstanceRef.current = null;
+      }
+    };
+  }, [apiKey, center.lat, center.lng, merchants, searchRadiusKm, selectedMerchantId]);
+
+  useEffect(() => {
+    // If no API key provided, use OpenStreetMap Leaflet map instead of Google Maps
     if (!apiKey) {
-      setMapError('No Google Maps API Key configured (VITE_GOOGLE_MAPS_API_KEY). Showing accessible list fallback.');
+      setMapError('Using free OpenStreetMap view (no Google Maps API key required).');
       return;
     }
 
@@ -120,7 +234,7 @@ export default function GoogleMapView({
 
   return (
     <div className="space-y-4">
-      {/* Google Map Canvas (when active) */}
+      {/* Google Map Canvas (when API key is active) */}
       {apiKey && !mapError && (
         <div className="relative w-full h-80 sm:h-96 rounded-xl overflow-hidden border border-slate-200 shadow-inner">
           <div ref={mapContainerRef} className="w-full h-full" />
@@ -132,12 +246,27 @@ export default function GoogleMapView({
         </div>
       )}
 
-      {/* Fallback Notice when API key is missing */}
+      {/* OpenStreetMap (Leaflet) Interactive Map when Google Maps key is omitted */}
+      {!apiKey && !leafletFailed && (
+        <div className="relative w-full h-72 sm:h-80 rounded-xl overflow-hidden border border-slate-200 shadow-inner bg-slate-100">
+          <div ref={leafletContainerRef} className="w-full h-full z-0" />
+          {!leafletLoaded && (
+            <div className="absolute inset-0 bg-slate-100 flex items-center justify-center text-xs text-slate-500">
+              Loading interactive street map...
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Info Notice when using OpenStreetMap or offline fallback */}
       {mapError && (
-        <div className="p-3.5 rounded-lg bg-amber-50/80 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-900">
-          <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+        <div className="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-2.5 text-xs text-emerald-900">
+          <Info className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
           <div>
-            <span className="font-semibold">Spatial Map Fallback Mode:</span> Google Maps API key is not configured in environment variables. Operating in native list mode with direct navigation links.
+            <span className="font-semibold">Map Mode:</span>{' '}
+            {leafletFailed
+              ? 'Offline mode active — use the dealer cards and "Navigate" links below.'
+              : 'Interactive OpenStreetMap active (Blue dot = your field, Red dots = nearby shops).'}
           </div>
         </div>
       )}

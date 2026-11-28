@@ -71,47 +71,38 @@ export default function AboutPage() {
       <div className="space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">
           <BookOpen className="w-3.5 h-3.5" />
-          Academic Capstone Methodology & Citations
+          Official Farming Guides &amp; Safety Rules
         </div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          System Specifications & Agronomic Evidence
+          Approved Crop Medicines &amp; Safety Guide
         </h1>
         <p className="text-sm text-slate-600 leading-relaxed">
-          Design Thinking Project Title: <em>Multimodal Data Fusion for Precision Agricultural Chemical Dosages with Dynamic Localized Merchant Substitution</em>.
+          All medicine and fertilizer doses shown in <strong>AgriMultimodal</strong> (Intelligent Crop Diagnosis &amp; Dosage Recommendation System) follow official Indian farming manuals (CIBRC and ICAR) so your crops, soil, and harvest stay safe.
         </p>
       </div>
 
-      {/* Mathematical Formulations Section */}
+      {/* Simple How Dose & Shop Match Works */}
       <section className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-6">
         <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
           <Scale className="w-5 h-5 text-emerald-600" />
-          Mathematical Principles & Governing Equations
+          How We Keep Doses Safe
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-600 leading-relaxed">
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-            <h3 className="font-bold text-slate-900 text-sm">1. Bounded Dosage Formulation</h3>
-            <div className="font-mono text-emerald-800 font-bold text-sm bg-white p-2.5 rounded-lg border border-slate-200">
-              D = min(D₀ × Fₛ × Fᵥ, D_label_max)
-            </div>
+            <h3 className="font-bold text-slate-900 text-sm">1. Safe Medicine &amp; Fertilizer Limits</h3>
             <p>
-              • <strong>D₀:</strong> Base statutory active ingredient dosage for targeted crop phenology.<br />
-              • <strong>Fₛ:</strong> Soil correction factor (1.00 for foliar applied fungicides).<br />
-              • <strong>Fᵥ:</strong> Severity factor. Set strictly to 1.00 as chemical active ingredient escalation is prohibited by CIBRC. Carrier water volume is scaled +15% instead.<br />
-              • <strong>D_label_max:</strong> Statutory upper legal bound preventing phytotoxicity and residue accumulation.
+              • <strong>Never Over-Dose:</strong> We always stay under the legal maximum limit printed on official Indian pesticide labels.<br />
+              • <strong>Healthy Crops Stay Chemical-Free:</strong> If your leaf is healthy, we never suggest pesticide sprays — only soil-friendly fertilizer tips.<br />
+              • <strong>Wait Before Harvest:</strong> Every medicine shows the exact days you must wait before picking your crop so food stays safe.
             </p>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-            <h3 className="font-bold text-slate-900 text-sm">2. Active Ingredient Mass Equivalence</h3>
-            <div className="font-mono text-emerald-800 font-bold text-sm bg-white p-2.5 rounded-lg border border-slate-200">
-              Qs = Qr × (Cr / Cs)
-            </div>
+            <h3 className="font-bold text-slate-900 text-sm">2. Matching Different Shop Brands</h3>
             <p>
-              • <strong>Qr, Cr:</strong> Reference dosage and concentration (%) of baseline product.<br />
-              • <strong>Qs, Cs:</strong> Required dosage and concentration (%) of substitute commercial product.<br />
-              • <strong>Package Estimation:</strong> Ceiled count: <code>⌈(Qs × Acres) / Package Size⌉</code>.<br />
-              • <strong>Ranking Score:</strong> Weighted utility across affordability (40%), proximity (35%), and stock (25%).
+              • <strong>Same Medicine, Different Strength:</strong> If your local shop sells a different concentration (for example, 80% instead of 75%), we automatically adjust the grams per acre so you still use the exact safe amount.<br />
+              • <strong>Best Local Shop Ranking:</strong> Nearby shops are ranked by lowest price, shortest distance from your field, and available stock.
             </p>
           </div>
         </div>
@@ -123,14 +114,14 @@ export default function AboutPage() {
           <div>
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <Award className="w-5 h-5 text-emerald-600" />
-              Verified Agronomic Treatment Catalog
+              Approved Medicine Chart
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Strictly peer-verified from CIBRC registered pesticide schedules and ICAR / UAS Bangalore agronomic manuals.
+              Taken from Govt. of India CIBRC label guides and ICAR / UAS Bengaluru crop manuals.
             </p>
           </div>
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
-            5 Verified Pathologies
+            5 Verified Guides
           </span>
         </div>
 
@@ -138,12 +129,12 @@ export default function AboutPage() {
           <table className="w-full text-left text-xs text-slate-700 divide-y divide-slate-200">
             <thead className="bg-slate-50 font-semibold text-slate-900 uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3 px-3">Crop & Disease</th>
-                <th className="py-3 px-3">Active Chemical</th>
-                <th className="py-3 px-3">Registered Product</th>
-                <th className="py-3 px-3">Prescribed Rate</th>
-                <th className="py-3 px-3">PHI</th>
-                <th className="py-3 px-3">Statutory Source Citation</th>
+                <th className="py-3 px-3">Crop &amp; Problem</th>
+                <th className="py-3 px-3">Medicine</th>
+                <th className="py-3 px-3">Example Brand</th>
+                <th className="py-3 px-3">Amount / Acre</th>
+                <th className="py-3 px-3">Wait Before Harvest</th>
+                <th className="py-3 px-3">Official Guide</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -168,21 +159,21 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Disclaimers & Ethics */}
+      {/* Simple Important Reminders */}
       <section className="p-6 rounded-2xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 space-y-3">
         <h3 className="font-bold text-amber-950 text-sm flex items-center gap-1.5">
           <Info className="w-4 h-4 text-amber-700" />
-          Academic & Legal Disclaimers
+          Important Things to Remember
         </h3>
         <ul className="space-y-1.5 leading-relaxed text-amber-800">
           <li>
-            • <strong>No Unsubstantiated Machine Learning Diagnoses:</strong> When trained weights are absent from <code>ml_models/weights/</code>, the platform transparently indicates pending status rather than outputting simulated probabilities.
+            • <strong>Soil Estimates:</strong> Soil numbers are area averages. Get a local soil lab test for exact farm soil measurements.
           </li>
           <li>
-            • <strong>SoilGrids 2.0 Limitations:</strong> Properties represent 250m machine-learning derived estimates. They are intended for regional baseline characterization and cannot replace certified laboratory soil chemistry tests.
+            • <strong>Sample Shop Listings:</strong> Shops marked <code>[DEMO]</code> are sample listings — please check real stock and price directly with your local dealer.
           </li>
           <li>
-            • <strong>Simulated Dealer Data:</strong> Dealers and stock records marked with <code>[DEMO]</code> are seeded for software evaluation and do not reflect real-time retail inventory.
+            • <strong>Ask an Expert When Unsure:</strong> Always read the packet label and check with your local agriculture officer if you are unsure.
           </li>
         </ul>
       </section>

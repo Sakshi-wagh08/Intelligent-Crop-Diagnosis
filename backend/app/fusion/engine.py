@@ -51,15 +51,45 @@ class DosageCalculator:
         Fs = 1.00
         Fs_status = "Disabled (Foliar application: uptake independent of soil matrix)"
 
-        if application_method.lower() != "foliar spray":
+        if "foliar" not in application_method.lower():
             if soil_result is None or soil_result.data_status == "unavailable" or not soil_result.parameters:
                 Fs = 1.00
                 Fs_status = "Disabled (Soil telemetry unavailable; neutral 1.00 applied)"
             else:
-                # Soil-applied treatment with verified data: check for documented soil adjustment
-                # If no verified adjustment rule is certified in the treatment, remain disabled (1.00)
-                Fs = 1.00
-                Fs_status = f"Verified baseline (Soil status: {soil_result.data_status}; no soil adjustment justified)"
+                # Soil-applied treatment with verified data: explicit auditable rules from pH, SOC, N, texture
+                params = soil_result.parameters
+                reasons = []
+                fs_calc = 1.00
+
+                soc = params.organic_carbon_g_kg
+                nitrogen = params.nitrogen_g_kg
+                sand = params.sand_fraction_percent
+                ph = params.pH
+
+                # Organic Carbon / Nitrogen Reserve Factor
+                if (soc is not None and soc < 5.0) or (nitrogen is not None and nitrogen < 1.0):
+                    fs_calc *= 1.15
+                    reasons.append("low soil organic carbon/nitrogen (+15%)")
+                elif (soc is not None and soc > 12.0) or (nitrogen is not None and nitrogen > 2.5):
+                    fs_calc *= 0.85
+                    reasons.append("high soil organic carbon/nitrogen (-15%)")
+                else:
+                    reasons.append("moderate soil carbon/nitrogen (1.00)")
+
+                # Sandy soil leaching guard (split smaller single dose)
+                if sand is not None and sand >= 65.0:
+                    fs_calc *= 0.90
+                    reasons.append("sandy soil leaching guard (-10%, split doses recommended)")
+
+                # pH advisory note
+                if ph is not None and ph < 5.5:
+                    reasons.append(f"acidic pH {ph:.1f} (consider agricultural lime)")
+                elif ph is not None and ph > 8.0:
+                    reasons.append(f"alkaline pH {ph:.1f} (split application recommended)")
+
+                # Bound Fs safely within [0.75, 1.20]
+                Fs = round(max(0.75, min(1.20, fs_calc)), 2)
+                Fs_status = f"Active ({soil_result.data_status} soil: {', '.join(reasons)})"
 
         # 3. Calculate Raw and Bounded Dosage
         raw_dose = round(base_dose_D0 * Fs * Fv, 3)

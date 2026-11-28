@@ -248,16 +248,42 @@ def create_stratified_splits(
     train_ratio: float = 0.70,
     val_ratio: float = 0.15,
     test_ratio: float = 0.15,
-    random_seed: int = 42
+    random_seed: int = 42,
+    leaf_map_path: Optional[str] = None,
 ) -> Dict[str, Dict[str, int]]:
-    """Creates isolated, zero-leakage train, val, and test splits."""
+    """Creates isolated, zero-leakage train, val, and test splits.
+
+    Clears any previous processed splits before copying so stale or duplicate files
+    cannot accumulate across runs. When leaf_map_path (PlantVillage leaf-map.json)
+    is provided, groups images by physical leaf_id prior to splitting.
+    """
     import random
     random.seed(random_seed)
 
-    split_stats = {"train": {}, "val": {}, "test": {}}
-
+    # Purge existing split files to guarantee zero stale/duplicate carryover
     for split in ["train", "val", "test"]:
-        os.makedirs(os.path.join(output_dir, split), exist_ok=True)
+        split_root = os.path.join(output_dir, split)
+        if os.path.exists(split_root):
+            for root_dir, _, files in os.walk(split_root):
+                for fname in files:
+                    fpath = os.path.join(root_dir, fname)
+                    try:
+                        os.remove(fpath)
+                    except OSError:
+                        pass
+        os.makedirs(split_root, exist_ok=True)
+
+    leaf_lookup: Dict[str, str] = {}
+    if leaf_map_path and os.path.exists(leaf_map_path):
+        try:
+            with open(leaf_map_path, "r", encoding="utf-8") as lf:
+                raw_map = json.load(lf)
+            if isinstance(raw_map, dict):
+                leaf_lookup = {str(k).lower(): str(v) for k, v in raw_map.items()}
+        except Exception as exc:
+            print(f"Warning: could not parse leaf map {leaf_map_path}: {exc}")
+
+    split_stats = {"train": {}, "val": {}, "test": {}}
 
     print(f"\nPartitioning dataset into Train ({train_ratio*100:.0f}%), Val ({val_ratio*100:.0f}%), Test ({test_ratio*100:.0f}%)...")
 
@@ -267,18 +293,42 @@ def create_stratified_splits(
             continue
 
         images = sorted(os.listdir(class_src_dir))
-        random.shuffle(images)
 
-        n_total = len(images)
-        n_train = int(n_total * train_ratio)
-        n_val = int(n_total * val_ratio)
-        n_test = n_total - n_train - n_val
+        if leaf_lookup:
+            # Group by physical leaf_id when mapped, falling back to unique filename
+            groups: Dict[str, List[str]] = {}
+            for img_name in images:
+                stem = os.path.splitext(img_name)[0].lower()
+                grp_id = leaf_lookup.get(stem, img_name)
+                groups.setdefault(grp_id, []).append(img_name)
+            group_keys = list(groups.keys())
+            random.shuffle(group_keys)
 
-        splits = {
-            "train": images[:n_train],
-            "val": images[n_train:n_train + n_val],
-            "test": images[n_train + n_val:]
-        }
+            n_total = len(images)
+            target_train = int(n_total * train_ratio)
+            target_val = int(n_total * val_ratio)
+
+            splits: Dict[str, List[str]] = {"train": [], "val": [], "test": []}
+            for gk in group_keys:
+                if len(splits["train"]) < target_train:
+                    splits["train"].extend(groups[gk])
+                elif len(splits["val"]) < target_val:
+                    splits["val"].extend(groups[gk])
+                else:
+                    splits["test"].extend(groups[gk])
+            n_train, n_val, n_test = len(splits["train"]), len(splits["val"]), len(splits["test"])
+        else:
+            random.shuffle(images)
+            n_total = len(images)
+            n_train = int(n_total * train_ratio)
+            n_val = int(n_total * val_ratio)
+            n_test = n_total - n_train - n_val
+
+            splits = {
+                "train": images[:n_train],
+                "val": images[n_train:n_train + n_val],
+                "test": images[n_train + n_val:]
+            }
 
         for split_name, split_files in splits.items():
             dest_split_dir = os.path.join(output_dir, split_name, canon_class)

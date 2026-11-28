@@ -17,55 +17,50 @@ import StatusBadge from '../components/StatusBadge';
 export default function HomePage() {
   const tiers = [
     {
-      number: '01',
-      title: 'Vision Stream & Lesion Severity',
+      number: 'STEP 01',
+      title: 'Check Leaf Photo',
       icon: Camera,
-      badge: 'EfficientNet-B0 & OpenCV',
+      badge: 'Photo Check',
       description:
-        'Analyzes foliar photographs to isolate infected leaf area and calculate severity surface ratios (S_severity) without hallucinating unverified diagnoses.',
+        'Take or upload a photo of 1 plant leaf to check if the plant is healthy or has a disease.',
     },
     {
-      number: '02',
-      title: 'Geospatial Soil Telemetry',
+      number: 'STEP 02',
+      title: 'Check Field Soil & Weather',
       icon: Layers,
-      badge: 'ISRIC SoilGrids 2.0 & PostGIS',
+      badge: 'Town or GPS',
       description:
-        'Fetches 250m resolution baseline soil chemistry: pH, soil organic carbon, USDA texture, and available water capacity (AWC) with ICAR regional benchmark fallbacks.',
+        'Automatically checks soil type, nutrients, and rain/wind forecast for your village or town.',
     },
     {
-      number: '03',
-      title: 'Bounded Dosage Fusion Engine',
+      number: 'STEP 03',
+      title: 'Safe Dose & Mixing Guide',
       icon: ShieldCheck,
-      badge: 'CIBRC & ICAR Certified',
+      badge: 'Govt-Safe Limits',
       description:
-        'Formulates statutory bounded chemical dosage D = min(D₀ × Fₛ × Fᵥ, D_label_max) with 4 safety gates: confidence ≥70%, PHI interval, and chemical compatibility.',
+        'Gives the exact safe amount of medicine or fertilizer to use per acre, how much water to mix, and when it is safe to harvest.',
     },
     {
-      number: '04',
-      title: 'Localized Dealer Substitution',
+      number: 'STEP 04',
+      title: 'Find Nearby Agro-Shops',
       icon: Store,
-      badge: 'PostGIS GiST & Ranking',
+      badge: 'Map & Prices',
       description:
-        'Calculates active ingredient product equivalence Qs = Qr × (Cr / Cs), checks local agro-dealer inventory, and ranks alternatives across price, distance, and stock.',
+        'Shows nearby shops on a map, compares prices and stock, and adjusts the dose if a shop sells a different strength.',
     },
   ];
 
   return (
-    <div className="space-y-16 py-6 sm:py-10">
+    <div className="space-y-14 py-6 sm:py-10">
       {/* Hero Section */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 text-white p-8 sm:p-14 shadow-xl">
         <div className="relative z-10 max-w-3xl space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5" />
-            Design Thinking Academic Capstone · Phases 1–6 Complete
-          </div>
-
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-            Precision Crop Diagnosis & Bounded Dosage Recommendation
+            Check Your Crop &amp; Get Safe Treatment Advice
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
-            A multimodal precision agriculture platform integrating deep vision analytics, satellite soil telemetry, regulatory safety enforcement, and localized agro-dealer substitution.
+          <p className="text-sm sm:text-base text-slate-200 leading-relaxed max-w-2xl">
+            Take a leaf photo, pick your town or GPS, and get simple step-by-step medicine, fertilizer, weather, and nearby shop guidance.
           </p>
 
           <div className="flex items-center gap-4 pt-2 flex-wrap">
@@ -73,7 +68,7 @@ export default function HomePage() {
               to="/diagnose"
               className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 hover:scale-[1.02]"
             >
-              Start Diagnosis Wizard
+              Check My Crop Now
               <ArrowRight className="w-4 h-4" />
             </Link>
 
@@ -81,7 +76,7 @@ export default function HomePage() {
               to="/merchants"
               className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/20 transition-all backdrop-blur-md"
             >
-              Agro-Dealer Explorer
+              Find Nearby Shops
             </Link>
           </div>
         </div>
@@ -90,14 +85,14 @@ export default function HomePage() {
         <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       </section>
 
-      {/* 4-Tier Architecture Overview */}
+      {/* 4 Simple Steps Overview */}
       <section className="space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            Four-Layer Multimodal Architecture
+            How It Works in 4 Easy Steps
           </h2>
           <p className="text-sm text-slate-500">
-            Engineered strictly according to IEEE system specifications and agronomic standards.
+            Simple guidance made for everyday farming.
           </p>
         </div>
 
@@ -112,7 +107,7 @@ export default function HomePage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      TIER {t.number}
+                      {t.number}
                     </span>
                     <Icon className="w-5 h-5 text-slate-400" />
                   </div>
@@ -132,16 +127,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* System Integrity & Regulatory Highlights */}
+      {/* Safety Highlights */}
       <section className="rounded-3xl bg-slate-900 text-slate-200 p-8 sm:p-12 border border-slate-800">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
               <ShieldCheck className="w-6 h-6" />
             </div>
-            <h4 className="font-bold text-white text-base">CIBRC Dosage Ceilings</h4>
+            <h4 className="font-bold text-white text-base">Safe Medicine Limits</h4>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Every chemical dosage recommendation is hard-capped by statutory label ceilings (D_label_max). Over-dosage is mathematically prohibited to protect crops and groundwater.
+              Never suggests more medicine than the legal safe limit, protecting your crop, soil, and harvest.
             </p>
           </div>
 
@@ -149,9 +144,9 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
               <Award className="w-6 h-6" />
             </div>
-            <h4 className="font-bold text-white text-base">Zero Fabricated Diagnoses</h4>
+            <h4 className="font-bold text-white text-base">No Guessing When Unsure</h4>
             <p className="text-xs text-slate-400 leading-relaxed">
-              When deep learning model weights are not loaded on the server, the system explicitly reports pending status rather than hallucinating fake disease diagnoses or probabilities.
+              If a photo is blurry or unclear, it will warn you instead of giving wrong spray advice, and healthy crops never get pesticide sprays.
             </p>
           </div>
 
@@ -159,9 +154,9 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
               <Store className="w-6 h-6" />
             </div>
-            <h4 className="font-bold text-white text-base">Spatial PostGIS GiST Radius</h4>
+            <h4 className="font-bold text-white text-base">Easy Local Shop Match</h4>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Nearby agro-dealers are queried via spatial geodesic indices (SRID 4326), computing required retail packages and total cost based on active ingredient mass equivalence.
+              Shows shops near you on a map and tells you exactly how many packs to buy and their total cost.
             </p>
           </div>
         </div>

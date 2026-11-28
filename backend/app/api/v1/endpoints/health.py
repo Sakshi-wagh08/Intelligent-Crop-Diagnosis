@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from backend.app.schemas.health import HealthResponse
-from backend.app.db.session import check_database_connection, check_postgis_extension
+from backend.app.db.session import check_database_connection, check_postgis_extension, database_url
 from backend.app.core.config import settings
 
 router = APIRouter()
@@ -27,7 +27,7 @@ def get_health() -> HealthResponse:
             "connected": db_connected,
             "postgis_enabled": postgis_enabled,
             "postgis_version_or_status": postgis_version if postgis_enabled else (db_error or "Unavailable"),
-            "dialect": settings.get_database_url.split(":")[0],
+            "dialect": database_url.split(":")[0],
             "target_host": settings.POSTGRES_HOST,
             "target_port": settings.POSTGRES_PORT,
             "target_db": settings.POSTGRES_DB

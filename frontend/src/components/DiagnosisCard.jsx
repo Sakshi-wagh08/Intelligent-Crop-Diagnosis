@@ -50,17 +50,17 @@ export default function DiagnosisCard({
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-slate-900 text-base sm:text-lg flex items-center gap-2">
               <Camera className="w-5 h-5 text-emerald-600" />
-              Vision Stream & Foliar Analysis
+              Step 2: Check Your Plant Leaf
             </h3>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Plant leaf photograph analysis and lesion severity surface ratio (S_severity)
+            Take or upload a clear photo of 1 leaf, or pick a leaf problem below.
           </p>
         </div>
 
         <StatusBadge
           status={hasActiveModel ? 'live' : 'pending'}
-          label={hasActiveModel ? 'Classifier Loaded (Experimental)' : 'Model Training Pending'}
+          label={hasActiveModel ? 'Photo Check Ready' : 'Model Training Pending'}
         />
       </div>
 
@@ -69,24 +69,24 @@ export default function DiagnosisCard({
         <div className="p-4 rounded-xl bg-amber-50/90 border border-amber-300 text-xs text-amber-950 space-y-2">
           <div className="flex items-center gap-2 font-bold text-amber-900">
             <Cpu className="w-4 h-4 text-amber-700 shrink-0" />
-            <span>Vision Stream Status: Model Training Pending (Phase 2 Weights Unavailable)</span>
+            <span>Auto Leaf Check Unavailable (Model Training Pending)</span>
           </div>
           <p className="leading-relaxed">
-            The trained EfficientNet-B0 disease classifier checkpoint is currently not loaded on the backend. 
-            <strong> The system has not performed automated disease detection, and no fabricated diagnoses or confidence probabilities will be displayed.</strong>
+            The trained EfficientNet-B0 disease classifier checkpoint is currently not loaded on the backend.
+            <strong> No automatic leaf detection is running right now.</strong>
           </p>
           <p className="leading-relaxed text-amber-900 font-medium">
-            To evaluate the downstream <strong>Multimodal Fusion, Bounded Dosage Engine, and Merchant Substitution</strong> pipelines, please select a test pathology from the demonstration catalog below.
+            Please pick the leaf problem from the list below to see the dose and nearby shop guide.
           </p>
         </div>
       ) : (
-        <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs text-emerald-950 space-y-2">
+        <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs text-emerald-950 space-y-1.5">
           <div className="flex items-center gap-2 font-bold text-emerald-900">
             <Cpu className="w-4 h-4 text-emerald-700 shrink-0" />
-            <span>Vision Stream Status: EfficientNet-B0 Active (Academic Prototype / Experimental)</span>
+            <span>Leaf Photo Check is Ready</span>
           </div>
           <p className="leading-relaxed text-emerald-900">
-            The 7-class disease classifier (PyTorch &amp; ONNX Runtime) is loaded. Upload a plant leaf photograph below for automated disease diagnosis and foliar lesion severity estimation (S_severity), or select a target pathology from the verified test catalog.
+            Take a close photo of 1 leaf against a plain background. We will check if it is healthy or sick and how much of the leaf is damaged. (Or you can pick the disease yourself below.)
           </p>
         </div>
       )}
@@ -94,7 +94,7 @@ export default function DiagnosisCard({
       {/* Image Upload Area */}
       <div className="space-y-3">
         <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-          Upload Leaf Photograph (Optional: for OpenCV foliar severity segmentation)
+          Upload or Take a Leaf Photo
         </label>
 
         <div
@@ -173,16 +173,16 @@ export default function DiagnosisCard({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded-lg border border-slate-200">
             <div>
-              <span className="text-xs text-slate-500">Predicted Pathology</span>
+              <span className="text-xs text-slate-500">Detected Condition</span>
               <p className="text-base font-bold text-slate-900 mt-0.5">
                 {visionResult.diagnosis.crop}: {visionResult.diagnosis.disease}
               </p>
               {visionResult.diagnosis.is_healthy && (
-                <span className="text-xs font-semibold text-emerald-700">Healthy Leaf Foliage</span>
+                <span className="text-xs font-semibold text-emerald-700">Healthy Leaf</span>
               )}
             </div>
             <div>
-              <span className="text-xs text-slate-500">Model Softmax Confidence</span>
+              <span className="text-xs text-slate-500">How Sure the Check Is</span>
               <p className="text-base font-bold text-slate-900 mt-0.5">
                 {((visionResult.diagnosis.confidence || 0) * 100).toFixed(1)}%
               </p>
@@ -196,47 +196,22 @@ export default function DiagnosisCard({
               </div>
             </div>
             <div>
-              <span className="text-xs text-slate-500">Inference Runtime</span>
-              <p className="text-xs font-mono font-semibold text-slate-700 mt-1">
-                {visionResult.diagnosis.inference_device || 'ONNX Runtime CPU (FP16)'}
+              <span className="text-xs text-slate-500">Leaf Check Mode</span>
+              <p className="text-xs font-semibold text-slate-700 mt-1">
+                {visionResult.diagnosis.inference_device || 'Fast Auto Check'}
               </p>
             </div>
           </div>
-
-          {/* Top-K Alternative Predictions */}
-          {visionResult.diagnosis.top_k_predictions && visionResult.diagnosis.top_k_predictions.length > 1 && (
-            <div className="space-y-1.5 pt-1">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                Top Model Predictions:
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {visionResult.diagnosis.top_k_predictions.map((item, idx) => (
-                  <div key={idx} className="p-2 bg-white rounded border border-slate-200 text-xs flex justify-between items-center">
-                    <span className="text-slate-700 truncate mr-2" title={item.class_name}>
-                      #{idx + 1} {item.class_name.replace('___', ' ')}
-                    </span>
-                    <span className="font-mono font-bold text-slate-900">
-                      {((item.confidence || 0) * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Low Confidence Advisory */}
           {!visionResult.diagnosis.is_confident && (
             <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <p>
-                <strong>Diagnostic Uncertainty Alert:</strong> Model confidence ({((visionResult.diagnosis.confidence || 0) * 100).toFixed(1)}%) is below the regulatory safety threshold of 70%. In accordance with agronomic safety rules, chemical recommendations will be flagged for expert verification.
+                <strong>Diagnostic Uncertainty Alert:</strong> The photo check is only {((visionResult.diagnosis.confidence || 0) * 100).toFixed(1)}% sure (below 70%). For your safety, please take a clearer photo or ask your local agriculture officer before spraying.
               </p>
             </div>
           )}
-
-          <p className="text-[11px] text-slate-400 italic">
-            * Academic Prototype Notice: EfficientNet-B0 trained on benchmark staging. Classification is experimental and advisory.
-          </p>
         </div>
       )}
 
@@ -292,22 +267,24 @@ export default function DiagnosisCard({
         );
       })()}
 
-      {/* Manual Pathology Selection for Demonstration/Testing */}
+      {/* Manual Problem Selection */}
       <div className="space-y-3 pt-2 border-t border-slate-100">
         <div className="space-y-1">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-                Demonstration & Research Testing (Manual Pathology Selection)
+                Or Pick a Crop Problem Yourself (Manual Selection)
               </label>
-              <StatusBadge status="demo" label="MANUAL TEST INPUT" size="xs" />
+              <StatusBadge status="demo" label={hasActiveModel ? 'MANUAL PICK' : 'MANUAL TEST INPUT'} size="xs" />
             </div>
             <span className="text-xs text-slate-500">
-              {relevantPathologies.length} Verified Treatments Cataloged
+              {relevantPathologies.length} Crop Problem(s) Available
             </span>
           </div>
-          <p className="text-[11px] text-amber-800">
-            <strong>Important:</strong> Because the AI vision model is pending training, selecting a pathology below is strictly a demonstration test input. It must <strong>never</strong> be presented as an AI-confirmed disease diagnosis.
+          <p className="text-[11px] text-slate-600">
+            {hasActiveModel
+              ? 'If you do not have a leaf photo right now, tap the problem you see on your crop below.'
+              : 'Manual Pathology Selection is active for testing because auto photo check is offline.'}
           </p>
         </div>
 
@@ -331,9 +308,11 @@ export default function DiagnosisCard({
                         {pathology.crop}: {pathology.disease}
                       </span>
                     </div>
-                    <span className="text-xs text-slate-500 mt-0.5 block">
-                      Active: {pathology.active_ingredient}
-                    </span>
+                    {pathology.active_ingredient && (
+                      <span className="text-xs text-slate-500 mt-0.5 block">
+                        Medicine: {pathology.active_ingredient}
+                      </span>
+                    )}
                   </div>
                   {isSelected ? (
                     <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -343,8 +322,8 @@ export default function DiagnosisCard({
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                  <span>Method: {pathology.application_method}</span>
-                  <span className="text-emerald-700 font-medium">CIBRC Verified</span>
+                  <span>{pathology.application_method || 'Foliar Spray'}</span>
+                  <span className="text-emerald-700 font-medium">Verified Safe Guide</span>
                 </div>
               </div>
             );

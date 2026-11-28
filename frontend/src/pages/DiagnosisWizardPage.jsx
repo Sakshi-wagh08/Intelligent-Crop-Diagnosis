@@ -45,10 +45,18 @@ export default function DiagnosisWizardPage() {
   const [isManualTestPathology, setIsManualTestPathology] = useState(false);
   const [diagnosticConfidence, setDiagnosticConfidence] = useState(null);
 
-  // Coordinates & Soil Telemetry State (User-entered or GPS-derived)
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
+  // Coordinates & Soil Telemetry State (Defaulted to Mandya town preset; user can tap GPS or any town)
+  const [latitude, setLatitude] = useState(12.5230);
+  const [longitude, setLongitude] = useState(76.8980);
+  const [selectedTown, setSelectedTown] = useState('Mandya, Karnataka');
   const [soilDepth, setSoilDepth] = useState('0-5cm');
+
+  const townPresets = [
+    { name: 'Mandya, Karnataka', lat: 12.5230, lon: 76.8980 },
+    { name: 'Ramanagara, Karnataka', lat: 12.7210, lon: 77.2810 },
+    { name: 'Bengaluru, Karnataka', lat: 12.9120, lon: 77.4850 },
+    { name: 'Dharwad, Karnataka', lat: 15.4589, lon: 75.0078 },
+  ];
   const [soilData, setSoilData] = useState(null);
   const [soilLoading, setSoilLoading] = useState(false);
   const [soilError, setSoilError] = useState(null);
@@ -203,31 +211,38 @@ export default function DiagnosisWizardPage() {
 
   // Run Nearby Agro-Dealer Substitution & Sourcing
   const handleRunSubstitution = async () => {
-    if (!recommendation?.treatment) {
-      alert('Please run the multimodal fusion engine first to prescribe an active ingredient.');
+    const activeTarget = recommendation?.treatment || recommendation?.fertilizer_recommendation;
+    if (!activeTarget) {
+      alert('Please run the action plan step first to prescribe a product or fertilizer.');
       return;
     }
 
     setSubstitutionLoading(true);
     setSubstitutionError(null);
 
-    const activeIng = recommendation.treatment.active_ingredient;
-    const doseQr = recommendation.dosage_breakdown?.final_prescribed_dose || 0.8;
-    const doseUnit = recommendation.dosage_breakdown?.dose_unit || 'kg/acre';
-    const concCr = recommendation.treatment.reference_concentration_Cr || 75.0;
+    const isFertilizerFallback = !recommendation?.treatment && Boolean(recommendation?.fertilizer_recommendation);
+    const activeIng = activeTarget.active_ingredient;
+    const doseQr = isFertilizerFallback
+      ? activeTarget.final_prescribed_dose || 35.0
+      : recommendation.dosage_breakdown?.final_prescribed_dose || 0.8;
+    const doseUnit = isFertilizerFallback
+      ? activeTarget.dose_unit || 'kg/acre'
+      : recommendation.dosage_breakdown?.dose_unit || 'kg/acre';
+    const concCr = activeTarget.reference_concentration_Cr || 46.0;
+    const appMethod = activeTarget.application_method || (isFertilizerFallback ? 'Soil Application' : 'Foliar Spray');
 
     try {
       // 1. Fetch ranked offerings
       const rankPayload = {
-        latitude,
-        longitude,
+        latitude: Number(latitude),
+        longitude: Number(longitude),
         crop_name: cropName,
-        disease_name: selectedDisease,
+        disease_name: isFertilizerFallback ? 'Healthy' : selectedDisease,
         active_ingredient: activeIng,
         reference_dose_Qr: doseQr,
         reference_concentration_Cr: concCr,
         reference_dose_unit: doseUnit,
-        prescribed_application_method: recommendation.treatment.application_method || 'Foliar Spray',
+        prescribed_application_method: appMethod,
         field_area_acres: Number(fieldAreaAcres),
         max_distance_km: Number(searchRadiusKm),
         allow_demo: true,
@@ -270,11 +285,11 @@ export default function DiagnosisWizardPage() {
   };
 
   const steps = [
-    { num: 1, label: 'Crop & Field' },
-    { num: 2, label: 'Vision & Disease' },
-    { num: 3, label: 'Soil Telemetry' },
-    { num: 4, label: 'Dosage Fusion' },
-    { num: 5, label: 'Dealer Sourcing' },
+    { num: 1, label: '1. Your Crop' },
+    { num: 2, label: '2. Leaf Photo' },
+    { num: 3, label: '3. Town & Soil' },
+    { num: 4, label: '4. Action Plan' },
+    { num: 5, label: '5. Nearby Shops' },
   ];
 
   return (
@@ -327,10 +342,10 @@ export default function DiagnosisWizardPage() {
           <div className="space-y-1">
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <Sprout className="w-5 h-5 text-emerald-600" />
-              Step 1: Crop Phenology & Field Area
+              Step 1: Tell Us About Your Crop
             </h3>
             <p className="text-xs text-slate-500">
-              Select the agricultural crop, current phenological growth stage, and land area.
+              Pick your crop, growth stage, field size, and how many days left until harvest.
             </p>
           </div>
 
@@ -338,7 +353,7 @@ export default function DiagnosisWizardPage() {
             {/* Crop Selection */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Target Crop
+                Which Crop?
               </label>
               <select
                 value={cropName}
@@ -348,43 +363,43 @@ export default function DiagnosisWizardPage() {
                 {crops.length > 0 ? (
                   crops.map((c) => (
                     <option key={c.id} value={c.name}>
-                      {c.name} ({c.scientific_name})
+                      {c.name}
                     </option>
                   ))
                 ) : (
                   <>
-                    <option value="Tomato">Tomato (Solanum lycopersicum)</option>
-                    <option value="Potato">Potato (Solanum tuberosum)</option>
-                    <option value="Rice">Rice (Oryza sativa)</option>
+                    <option value="Tomato">Tomato</option>
+                    <option value="Potato">Potato</option>
+                    <option value="Rice">Rice</option>
                   </>
                 )}
               </select>
             </div>
 
-            {/* Phenological Stage */}
+            {/* Growth Stage */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Phenological Growth Stage
+                Plant Growth Stage
               </label>
               <select
                 value={cropStage}
                 onChange={(e) => setCropStage(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               >
-                <option value="Seedling">Seedling</option>
-                <option value="Vegetative">Vegetative</option>
+                <option value="Seedling">Seedling (Young Plant)</option>
+                <option value="Vegetative">Vegetative (Leaf Growth)</option>
                 <option value="Flowering">Flowering</option>
                 <option value="Fruiting">Fruiting</option>
                 <option value="Tillering">Tillering</option>
                 <option value="Panicle Initiation">Panicle Initiation</option>
-                <option value="Maturity">Maturity</option>
+                <option value="Maturity">Maturity (Near Harvest)</option>
               </select>
             </div>
 
             {/* Field Area in Acres */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Field Area (Acres)
+                Field Size (in Acres)
               </label>
               <input
                 type="number"
@@ -395,13 +410,13 @@ export default function DiagnosisWizardPage() {
                 onChange={(e) => setFieldAreaAcres(parseFloat(e.target.value) || 1.0)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
-              <span className="text-[11px] text-slate-400">Used to scale total chemical formulation and retail package requirements.</span>
+              <span className="text-[11px] text-slate-400">Helps calculate total packets needed for your whole field.</span>
             </div>
 
             {/* Days to Harvest (PHI safety check) */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Estimated Days to Harvest (PHI Check)
+                Days Left Until Harvest
               </label>
               <input
                 type="number"
@@ -411,23 +426,23 @@ export default function DiagnosisWizardPage() {
                 onChange={(e) => setDaysToHarvest(parseInt(e.target.value) || 0)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
-              <span className="text-[11px] text-slate-400">Statutory Pre-Harvest Interval (PHI) verification prevents pesticide residues in harvested produce.</span>
+              <span className="text-[11px] text-slate-400">Makes sure spraying stops early enough so harvest stays safe to eat.</span>
             </div>
           </div>
 
           {/* Optional Tank-Mix Chemical Inputs */}
           <div className="space-y-2 pt-2">
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-              Co-Applied Tank-Mix Partners (Optional Chemical Incompatibility Screen)
+              Are You Mixing Any Other Spray? (Optional)
             </label>
             <input
               type="text"
-              placeholder="e.g. Chlorpyrifos, Bordeaux Mixture (comma-separated)"
+              placeholder="e.g. Chlorpyrifos, Bordeaux Mixture (leave blank if none)"
               value={tankMixChemicals}
               onChange={(e) => setTankMixChemicals(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
-            <span className="text-[11px] text-slate-400">The engine scans for documented chemical antagonism, rapid alkaline hydrolysis, and phytotoxicity.</span>
+            <span className="text-[11px] text-slate-400">We warn you if mixing two sprays together can burn the leaves.</span>
           </div>
 
           <div className="flex justify-end pt-4 border-t border-slate-100">
@@ -436,7 +451,7 @@ export default function DiagnosisWizardPage() {
               onClick={() => setCurrentStep(2)}
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all"
             >
-              Continue to Vision & Disease
+              Next: Check Leaf Photo
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -462,7 +477,7 @@ export default function DiagnosisWizardPage() {
             isManualTestPathology={isManualTestPathology}
           />
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-3">
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
@@ -471,20 +486,31 @@ export default function DiagnosisWizardPage() {
               <ChevronLeft className="w-4 h-4" />
               Back
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!selectedDisease) {
-                  alert('Please select a target pathology from the demonstration catalog to evaluate the downstream pipeline.');
-                  return;
-                }
-                setCurrentStep(3);
-              }}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all"
-            >
-              Continue to Soil Telemetry
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-3 flex-wrap">
+              <button
+                type="button"
+                onClick={handleRunFusion}
+                disabled={fusionLoading || !selectedDisease}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-all disabled:opacity-50"
+              >
+                {fusionLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {fusionLoading ? 'Preparing Plan...' : `Quick Action Plan (${selectedTown.split(',')[0]})`}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedDisease) {
+                    alert('Please upload a leaf photo or select a condition first.');
+                    return;
+                  }
+                  setCurrentStep(3);
+                }}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all"
+              >
+                Continue to Location & Soil
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -497,10 +523,10 @@ export default function DiagnosisWizardPage() {
               <div>
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <Layers className="w-5 h-5 text-emerald-600" />
-                  Step 3: Geolocation & SoilGrids Telemetry
+                  Step 3: Pick Your Town &amp; Check Soil
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Query 250m baseline soil chemical properties from ISRIC SoilGrids 2.0 with regional fallback.
+                  Tap your nearby town or click Use My GPS to check soil and weather for your field.
                 </p>
               </div>
 
@@ -510,8 +536,38 @@ export default function DiagnosisWizardPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 transition-colors"
               >
                 <Navigation className="w-3.5 h-3.5" />
-                Use Device GPS
+                Use My GPS
               </button>
+            </div>
+
+            {/* One-Tap Town Presets for Farmers */}
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-slate-700 block">
+                Quick Pick Your Nearby Town (or enter coordinates below):
+              </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                {townPresets.map((town) => {
+                  const isActiveTown = selectedTown === town.name;
+                  return (
+                    <button
+                      key={town.name}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTown(town.name);
+                        setLatitude(town.lat);
+                        setLongitude(town.lon);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                        isActiveTown
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50 hover:border-emerald-300'
+                      }`}
+                    >
+                      {town.name.split(',')[0]}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Coordinate Inputs */}
@@ -560,9 +616,9 @@ export default function DiagnosisWizardPage() {
 
             {/* Geolocation Guidance Notice */}
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
-              <span className="font-semibold text-slate-800 block">Field Geolocation Input:</span>
+              <span className="font-semibold text-slate-800 block">Easy Location Selection:</span>
               <p>
-                Enter your field coordinates in decimal degrees (e.g. from GPS or digital map), or click <strong>Use Device GPS</strong> to automatically populate coordinates.
+                Just tap your nearby town above or click <strong>Use My GPS</strong>. You do not need to type coordinates manually unless you want to.
               </p>
             </div>
 
@@ -574,7 +630,7 @@ export default function DiagnosisWizardPage() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all disabled:opacity-50"
               >
                 {soilLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Layers className="w-3.5 h-3.5" />}
-                {soilLoading ? 'Querying ISRIC SoilGrids 2.0...' : 'Query Geospatial Soil Telemetry'}
+                {soilLoading ? 'Checking Soil...' : 'Check Soil Now'}
               </button>
             </div>
           </div>
@@ -598,7 +654,7 @@ export default function DiagnosisWizardPage() {
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all disabled:opacity-50"
             >
               {fusionLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-              {fusionLoading ? 'Executing Multimodal Fusion...' : 'Execute Multimodal Fusion Engine'}
+              {fusionLoading ? 'Preparing Action Plan...' : 'Get My Action Plan'}
             </button>
           </div>
         </div>
@@ -632,7 +688,7 @@ export default function DiagnosisWizardPage() {
               Back
             </button>
 
-            {recommendation?.treatment && (
+            {(recommendation?.treatment || recommendation?.fertilizer_recommendation) && (
               <button
                 type="button"
                 onClick={handleRunSubstitution}
@@ -640,7 +696,11 @@ export default function DiagnosisWizardPage() {
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all disabled:opacity-50"
               >
                 {substitutionLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Store className="w-4 h-4" />}
-                {substitutionLoading ? 'Searching Nearby Dealers...' : 'Find Agro-Dealers & Substitute Products'}
+                {substitutionLoading
+                  ? 'Searching Nearby Shops...'
+                  : !recommendation?.treatment && recommendation?.fertilizer_recommendation
+                  ? 'Find Nearby Fertilizer Shops'
+                  : 'Find Agro-Dealers & Substitute Products'}
               </button>
             )}
           </div>
@@ -658,10 +718,10 @@ export default function DiagnosisWizardPage() {
               </div>
               <div>
                 <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
-                  Agro-Dealer Search Radius (d_max)
+                  Shop Search Distance
                 </span>
                 <span className="text-xs text-slate-500">
-                  PostGIS GiST Geodesic Spatial Search: {searchRadiusKm} km
+                  Looking for nearby shops within {searchRadiusKm} km
                 </span>
               </div>
             </div>
