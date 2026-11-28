@@ -60,7 +60,7 @@ export default function HomePage() {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-200 leading-relaxed max-w-2xl">
-            Take a leaf photo, pick your town or GPS, and get simple step-by-step medicine, fertilizer, weather, and nearby shop guidance.
+            Snap a leaf photo, pick your location, get the safe dose for your field, and find nearby shops in minutes.
           </p>
 
           <div className="flex items-center gap-4 pt-2 flex-wrap">
